@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
+    sensor_msgs
     geometry_msgs
     nav_msgs
     tf
@@ -62,3 +63,5 @@ target_link_libraries(kitti_odom_test vins_lib)
 add_executable(kitti_gps_test src/KITTIGPSTest.cpp)
 target_link_libraries(kitti_gps_test vins_lib) 
 
+add_executable(kaist_imu_frd_converter src/kaist_imu_frd_converter.cpp)
+target_link_libraries(kaist_imu_frd_converter ${catkin_LIBRARIES})

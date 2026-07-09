@@ -1,0 +1,45 @@
+<launch>
+    <arg name="sequence" default="urban28"/>
+    <arg name="config_file" default="$(find vins)/../config/kaist_urban/kaist_$(arg sequence)_mono_imu_config.yaml"/>
+
+    <arg name="raw_imu_topic" default="/imu/data_raw"/>
+    <arg name="imu_topic" default="/imu/data_frd"/>
+    <arg name="raw_image_topic" default="/stereo/left/image_raw"/>
+    <arg name="image_topic" default="/stereo/left/image_mono"/>
+    <arg name="gps_topic" default="/gps/fix"/>
+
+    <arg name="use_imu_frd_converter" default="true"/>
+    <arg name="use_debayer" default="true"/>
+    <arg name="use_rviz" default="true"/>
+    <arg name="use_loop_fusion" default="false"/>
+    <arg name="use_global_fusion" default="false"/>
+
+    <node if="$(arg use_imu_frd_converter)" name="kaist_imu_frd_converter"
+          pkg="vins" type="kaist_imu_frd_converter" output="screen">
+        <param name="input_topic" value="$(arg raw_imu_topic)"/>
+        <param name="output_topic" value="$(arg imu_topic)"/>
+        <param name="output_frame_id" value="imu_frd"/>
+        <param name="invalidate_orientation" value="true"/>
+    </node>
+
+    <node if="$(arg use_debayer)" name="kaist_left_debayer"
+          pkg="nodelet" type="nodelet" args="standalone image_proc/debayer" output="screen">
+        <remap from="image_raw" to="$(arg raw_image_topic)"/>
+        <remap from="image_mono" to="$(arg image_topic)"/>
+        <remap from="image_color" to="/stereo/left/image_color"/>
+    </node>
+
+    <node name="vins_estimator" pkg="vins" type="vins_node" output="screen"
+          args="$(arg config_file)"/>
+
+    <node if="$(arg use_loop_fusion)" name="loop_fusion" pkg="loop_fusion"
+          type="loop_fusion_node" output="screen" args="$(arg config_file)"/>
+
+    <node if="$(arg use_global_fusion)" name="global_fusion" pkg="global_fusion"
+          type="global_fusion_node" output="screen">
+        <remap from="/gps" to="$(arg gps_topic)"/>
+    </node>
+
+    <include if="$(arg use_rviz)" file="$(find vins)/launch/vins_rviz.launch"/>
+</launch>
+

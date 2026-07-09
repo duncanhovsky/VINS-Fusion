@@ -1,0 +1,17 @@
+%YAML:1.0
+---
+model_type: PINHOLE
+camera_name: kaist_stereo_left
+image_width: 1280
+image_height: 560
+distortion_parameters:
+   k1: -0.0561430278
+   k2: 0.1395256320
+   p1: -0.0012155907
+   p2: -0.0009728139
+projection_parameters:
+   fx: 816.9037899277
+   fy: 811.5680382849
+   cx: 608.5072628169
+   cy: 263.4759976444
+

@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find vins)/launch/vins_kaist_urban.launch">
+        <arg name="sequence" value="urban32"/>
+    </include>
+</launch>
+
