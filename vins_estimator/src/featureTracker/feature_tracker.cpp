@@ -11,6 +11,8 @@
 
 #include "feature_tracker.h"
 
+#include <cmath>
+
 bool FeatureTracker::inBorder(const cv::Point2f &pt)
 {
     const int BORDER_SIZE = 1;
@@ -415,6 +417,11 @@ vector<cv::Point2f> FeatureTracker::ptsVelocity(vector<int> &ids, vector<cv::Poi
     if (!prev_id_pts.empty())
     {
         double dt = cur_time - prev_time;
+        if (!std::isfinite(dt) || dt <= 1e-6)
+        {
+            pts_velocity.resize(pts.size(), cv::Point2f(0, 0));
+            return pts_velocity;
+        }
         
         for (unsigned int i = 0; i < pts.size(); i++)
         {
@@ -433,7 +440,7 @@ vector<cv::Point2f> FeatureTracker::ptsVelocity(vector<int> &ids, vector<cv::Poi
     }
     else
     {
-        for (unsigned int i = 0; i < cur_pts.size(); i++)
+        for (unsigned int i = 0; i < pts.size(); i++)
         {
             pts_velocity.push_back(cv::Point2f(0, 0));
         }

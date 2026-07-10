@@ -11,6 +11,7 @@
 
 #include "ros/ros.h"
 #include "globalOpt.h"
+#include "tum_trajectory.h"
 #include <sensor_msgs/NavSatFix.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
@@ -30,6 +31,17 @@ nav_msgs::Path *global_path;
 double last_vio_t = -1;
 std::queue<sensor_msgs::NavSatFixConstPtr> gpsQueue;
 std::mutex m_buf;
+std::string global_result_path;
+
+std::string joinPath(const std::string &directory, const std::string &filename)
+{
+    if (directory.empty())
+        return filename;
+    const char last = directory[directory.size() - 1];
+    if (last == '/' || last == '\\')
+        return directory + filename;
+    return directory + "/" + filename;
+}
 
 void publish_car_model(double t, Eigen::Vector3d t_w_car, Eigen::Quaterniond q_w_car)
 {
@@ -143,18 +155,16 @@ void vio_callback(const nav_msgs::Odometry::ConstPtr &pose_msg)
 
 
     // write result to file
-    std::ofstream foutC("/home/tony-ws1/output/vio_global.csv", ios::app);
-    foutC.setf(ios::fixed, ios::floatfield);
-    foutC.precision(0);
-    foutC << pose_msg->header.stamp.toSec() * 1e9 << ",";
-    foutC.precision(5);
-    foutC << global_t.x() << ","
-            << global_t.y() << ","
-            << global_t.z() << ","
-            << global_q.w() << ","
-            << global_q.x() << ","
-            << global_q.y() << ","
-            << global_q.z() << endl;
+    std::ofstream foutC(global_result_path, ios::app);
+    vins::writeTumPose(foutC,
+                       pose_msg->header.stamp.toSec(),
+                       global_t.x(),
+                       global_t.y(),
+                       global_t.z(),
+                       global_q.x(),
+                       global_q.y(),
+                       global_q.z(),
+                       global_q.w());
     foutC.close();
 }
 
@@ -164,6 +174,12 @@ int main(int argc, char **argv)
     ros::NodeHandle n("~");
 
     global_path = &globalEstimator.global_path;
+    std::string output_path;
+    n.param<std::string>("output_path", output_path, "/tmp");
+    global_result_path = joinPath(output_path, "vio_global.tum");
+    std::ofstream fout(global_result_path, std::ios::out);
+    fout.close();
+    ROS_INFO_STREAM("global result path " << global_result_path);
 
     ros::Subscriber sub_GPS = n.subscribe("/gps", 100, GPS_callback);
     ros::Subscriber sub_vio = n.subscribe("/vins_estimator/odometry", 100, vio_callback);

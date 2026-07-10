@@ -18,7 +18,15 @@ The configs do not use `/gps/fix` directly. Optional `global_fusion_node`
 can be enabled from the launch wrapper and remaps KAIST `/gps/fix` to the
 original VINS-Fusion `/gps` subscription.
 
+The KAIST presets keep `estimate_td: 0` and `td: 0.0` by default. The KAIST
+sensor streams are expected to be synchronized, and the original VINS-Fusion
+temporal feature correction is sensitive to duplicate or non-monotonic image
+timestamps because feature velocities are divided by the inter-frame time.
+
+Trajectory files are written in standard TUM format. With the default
+`output_path: "/tmp"`, VIO results go to `/tmp/vio.tum`, and optional
+GPS loosely-coupled global fusion results go to `/tmp/vio_global.tum`.
+
 Before quantitative evaluation, verify the exact bag with `rosbag info` and
 replace camera/IMU calibration if your urban29-32 bags use per-sequence
 calibration different from the urban28-style local reference.
-

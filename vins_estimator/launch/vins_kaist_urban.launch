@@ -7,6 +7,7 @@
     <arg name="raw_image_topic" default="/stereo/left/image_raw"/>
     <arg name="image_topic" default="/stereo/left/image_mono"/>
     <arg name="gps_topic" default="/gps/fix"/>
+    <arg name="output_path" default="/tmp"/>
 
     <arg name="use_imu_frd_converter" default="true"/>
     <arg name="use_debayer" default="true"/>
@@ -37,9 +38,9 @@
 
     <node if="$(arg use_global_fusion)" name="global_fusion" pkg="global_fusion"
           type="global_fusion_node" output="screen">
+        <param name="output_path" value="$(arg output_path)"/>
         <remap from="/gps" to="$(arg gps_topic)"/>
     </node>
 
     <include if="$(arg use_rviz)" file="$(find vins)/launch/vins_rviz.launch"/>
 </launch>
-
